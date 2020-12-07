@@ -131,15 +131,11 @@ public class F_P001_D001ControllerImpl implements F_P001_D001Controller {
 		System.out.println("allScoreList=============>>" + allScoreList);
 		map.put("score_content", score_content);
 		List<Map<String, Object>> scoreList = scoreService.selectScorelist_categoryScore(map);
+		
 		System.out.println("scoreList=============>" + scoreList);
-		
 		System.out.println("");
-		
 		System.out.println("CTRL===============>>" + scoreList.size());
-		System.out.println("스코어리스트에 담긴 것--------->>" + scoreList);
 
-		
-		
 		mav.addObject("categoryList1",categoryList1);
 		mav.addObject("categoryList2",categoryList2);
 		mav.addObject("categoryList3",categoryList3);
@@ -205,7 +201,6 @@ public class F_P001_D001ControllerImpl implements F_P001_D001Controller {
 		mav.addObject("categoryInfo2", categoryInfo2);
 		mav.addObject("categoryInfo3", categoryInfo3);
 		mav.addObject("userInfo", userInfo);
-		System.out.println("여기는 옵니까");
 		System.out.println(categoryInfo1.toString());
 		System.out.println(categoryInfo2.toString());
 		System.out.println(categoryInfo3.toString());
@@ -219,7 +214,6 @@ public class F_P001_D001ControllerImpl implements F_P001_D001Controller {
 								   @RequestParam("category_id") String category_id, 
 								   HttpServletRequest request, HttpServletResponse response) throws Exception {
 		String viewName ="/F_P001/searchUser.tiles";
-		System.out.println("여기는 오느냐");
 		ModelAndView mav = new ModelAndView(viewName);	
 		Map<String, Object> map = new HashMap <String, Object>();
 		
