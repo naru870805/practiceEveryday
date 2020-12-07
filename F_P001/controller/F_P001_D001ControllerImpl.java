@@ -60,7 +60,6 @@ public class F_P001_D001ControllerImpl implements F_P001_D001Controller {
 		System.out.println("listSubject==============>>" + listSubject);
 		System.out.println("allUserScore==============>>" + allUserScore);
 		System.out.println(listSubject.toString());
-
 		return mav;
 	}
 
