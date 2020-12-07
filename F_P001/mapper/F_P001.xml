@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="yoonju.F.F_P001.F_P001_D001DAO">
+<resultMap id="scoreResult" type="java.util.Map">
+
+    <result property="score_content" column = "score_content" />
+    <result property="score_date" column = "score_date" />
+    <result property="score_point" column = "score_point" />
+    <result property="user_id" column = "user_id" />
+    <result property="score_category" column = "score_category" />
+    <result property="score_rank" column = "score_rank" />
+    <result property="score_totalPoint" column = "score_totalPoint" />
+    <result property="pro_num" column = "pro_num"/>
+    <result property="user_email" column = "user_email"/>
+    <result property="user_image" column = "user_image"/>
+    <result property="user_signdate" column = "user_signdate"/>
+	<result property="category_id" column = "category_id"/>
+	<result property="category_name" column = "category_name" />
+	<result property="pro_name" column = "pro_name" />
+	<result property="pro_num" column = "pro_num" />
+  </resultMap> 
+  
+  
+  <select id = "listSubject" resultType = "java.util.Map" >
+  <![CDATA[
+	  SELECT  category_id, category_name
+	  FROM    pro_category
+  ]]>
+  </select>
+  
+  <select id = "allRoundUserScore"   resultType = "java.util.Map">
+  <![CDATA[
+	  SELECT user_id, user_signdate, user_image, score_totalPoint,  RANK() OVER(ORDER BY score_totalPoint DESC) AS score_rank
+	  FROM(
+     	   SELECT  a.user_id, u.user_signdate, u.user_image, (
+                                             SELECT  SUM(score_point) AS score_totalPoint
+                                             FROM     score
+                                             WHERE user_id = a.user_id
+                                             GROUP BY user_id
+                                             ) as score_totalPoint
+	  	   FROM  user_table u, (SELECT user_id, sum(score_point) AS score_totalPoint
+                                FROM score s
+                                GROUP BY user_id
+                                ) a
+      WHERE u.user_id = a.user_id)
+  ]]>
+  </select>
+  
+
+  <select id="selectAllScoreList" resultType="java.util.Map"   >		<!-- 종합순위 -->
+    <![CDATA[
+     SELECT category_id, user_id, user_image, score_totalPoint,  RANK() OVER(ORDER BY score_totalPoint DESC) AS score_rank
+	  FROM(
+      		SELECT  a.category_id, a.user_id, u.user_image, (
+      											SELECT  SUM(score_point) AS score_totalPoint
+	  											FROM     score
+            									WHERE user_id = a.user_id
+            									AND	  category_id = #{category_id}
+	  											GROUP BY user_id
+     	   									  ) as score_totalPoint
+	  		FROM  user_table u,(
+                 				SELECT category_id, user_id, sum(score_point) AS score_totalPoint
+                  				FROM score s
+                  				GROUP BY user_id, category_id
+                  				) a
+      WHERE u.user_id = a.user_id
+      AND	category_id = #{category_id}
+            )
+    ]]>
+  </select>
+  
+  
+   <select id = "selectScorelist_categoryScore" resultType = "java.util.Map">	<!-- 카테고리 순위 (문제출제)  -->
+  	<![CDATA[
+     SELECT category_id, score_content, user_id, user_image, score_totalPoint,  RANK() OVER(ORDER BY score_totalPoint DESC) AS score_rank
+	  FROM(
+      		SELECT  a.category_id, a.user_id, a.score_content , u.user_image, a.score_totalPoint
+	  		FROM  user_table u,(
+                 				SELECT category_id, score_content, user_id, sum(score_point) AS score_totalPoint
+                  				FROM score s
+                  				GROUP BY category_id, user_id, score_content
+                                HAVING score_content = #{score_content}
+                  				) a
+      WHERE u.user_id = a.user_id
+      AND category_id = #{category_id}
+      )
+  	]]>
+  </select>
+  
+  
+  <select id = "categoryInfo1" resultType = "java.util.Map" > <!-- 문제출제 내역 정보 -->
+  	<![CDATA[
+		 SELECT s.user_id, pro_name, p.pro_num, s.score_point, s.score_content, s.score_date
+		 FROM score s, problem p
+		 WHERE p.pro_num = s.pro_num 
+		 AND s.user_id = #{user_id} 
+		 AND s.score_content = '문제제작'
+		 ORDER BY s.score_date DESC
+  	]]>
+  </select>
+  
+  
+    <select id = "categoryInfo2" resultType = "java.util.Map" > <!-- 문제집 내역 정보 -->
+  	<![CDATA[
+		 SELECT s.user_id, pro_name, p.pro_num, s.score_point, s.score_content, s.score_date
+		 FROM score s, problem p
+		 WHERE p.pro_num = s.pro_num 
+		 AND s.user_id = #{user_id} 
+		 AND s.score_content = '문제집제작'
+		 ORDER BY s.score_date DESC
+  	]]>
+  </select>
+  
+  
+      <select id = "categoryInfo3" resultType = "java.util.Map" > <!-- 문제집 내역 정보 -->
+  	<![CDATA[
+		 SELECT s.user_id, pro_name, p.pro_num, s.score_point, s.score_content, s.score_date
+		 FROM score s, problem p
+		 WHERE p.pro_num = s.pro_num 
+		 AND s.user_id = #{user_id} 
+		 AND s.score_content = '평가'
+		 ORDER BY s.score_date DESC
+  	]]>
+  </select>
+  
+  
+  <select id = "viewUser_score" resultType = "java.util.Map" parameterType = "String"> <!-- 유저 score 정보 -->
+  	<![CDATA[
+		SELECT s.category_id, u.user_id, u.user_image, (
+		        	     				 SELECT  SUM(score_point) AS score_totalPoint
+		           		 				 FROM  score
+		                				  WHERE user_id = u.user_id
+		             	 				 GROUP BY user_id
+		                 				 ) as score_totalPoint
+		FROM    user_table u, score s
+		WHERE   u.user_id = s.user_id
+		AND     u.user_id = #{user_id}
+		AND		s.category_id = #{category_id}
+  	]]>
+  </select>
+   
+  
+  <select id="searchUser" resultType = "java.util.Map">	<!-- 유저 score 검색 -->
+  	<![CDATA[		
+		SELECT   category_id, user_id, score_totalPoint, score_rank
+		FROM     (
+ 		          SELECT category_id, user_id, score_totalPoint, RANK() OVER(ORDER BY score_totalPoint DESC) AS score_rank
+ 		          FROM (
+                        SELECT  category_id, user_id, SUM(score_point) AS score_totalPoint
+                        FROM     score
+                        WHERE   category_id = #{category_id}
+                        GROUP BY category_id, user_id
+                        )
+             	 )
+		WHERE LOWER(user_id) LIKE '%'|| LOWER (#{user_id}) ||'%'
+        AND      category_id = #{category_id}
+		GROUP BY category_id, user_id, score_totalPoint, score_rank
+		ORDER BY score_totalPoint DESC
+  	]]>
+  </select>
+  
+
+    <select id= "selectUserInfo" resultType = "java.util.Map">	<!-- 유저 정보 검색 -->
+  	<![CDATA[		
+		SELECT	user_id, user_email, user_image ,user_signdate
+		FROM	user_table
+		WHERE	user_id= #{user_id}
+
+  	]]>
+  </select>
+
+
+</mapper>
